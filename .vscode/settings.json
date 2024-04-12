@@ -1,0 +1,7 @@
+{
+  "solidity.packageDefaultDependenciesContractsDirectory": "src",
+  "solidity.packageDefaultDependenciesDirectory": "lib",
+  "[solidity]": {
+    "editor.tabSize": 4
+  }
+}
