@@ -25,10 +25,10 @@ interface IWETH is IERC20 {
 contract Chocolate is ERC20, Ownable {
     using Address for address payable;
 
-    IUniswapV2Router02 public uniswapV2Router;
-    IUniswapV2Factory public uniswapV2Factory;
-    IUniswapV2Pair public uniswapV2Pair;
-    IWETH public weth;
+    IUniswapV2Router02 public immutable uniswapV2Router;
+    IUniswapV2Factory public immutable uniswapV2Factory;
+    IUniswapV2Pair public immutable uniswapV2Pair;
+    IWETH public immutable weth;
 
     address public uniswapV2PairAddress;
     address public constant UNISWAP_V2_ROUTER_ADDRESS = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
