@@ -16,12 +16,12 @@ contract TestMM1 is Test {
     address constant DAI_TOKEN = address(0x6B175474E89094C44Da98b954EedeAC495271d0F);
     address constant USDC_WHALE = address(0xF977814e90dA44bFA03b6295A0616a897441aceC);
     // AAVE USDC Receipt Token
-	address constant A_USDC = address(0x98C23E9d8f34FEFb1B7BD6a91B7FF122F4e16F5c);
-	// AAVE DAI Variable Debt Token
-	address constant VARIABLE_DEBT_DAI = address(0xcF8d0c70c850859266f5C338b38F9D663181C314);
+    address constant A_USDC = address(0x98C23E9d8f34FEFb1B7BD6a91B7FF122F4e16F5c);
+    // AAVE DAI Variable Debt Token
+    address constant VARIABLE_DEBT_DAI = address(0xcF8d0c70c850859266f5C338b38F9D663181C314);
 
-    uint256 constant USER_USDC_BALANCE = 100000 * 10**6;
-    uint256 constant AMOUNT_TO_DEPOSIT = 1000 * 10**6;
+    uint256 constant USER_USDC_BALANCE = 100000 * 10 ** 6;
+    uint256 constant AMOUNT_TO_DEPOSIT = 1000 * 10 ** 6;
     uint256 constant AMOUNT_TO_BORROW = 100 ether;
 
     AaveUser sut;
@@ -32,14 +32,16 @@ contract TestMM1 is Test {
     address user = makeAddr("user");
 
     function setUp() public {
-        /** SETUP EXERCISE - DON'T CHANGE ANYTHING HERE */
+        /**
+         * SETUP EXERCISE - DON'T CHANGE ANYTHING HERE
+         */
         vm.label(AAVE_V3_POOL, "AAVE_V3_POOL");
         vm.label(USDC_TOKEN, "USDC_TOKEN");
         vm.label(DAI_TOKEN, "DAI_TOKEN");
         vm.label(USDC_WHALE, "USDC_WHALE");
         vm.label(A_USDC, "A_USDC");
         vm.label(VARIABLE_DEBT_DAI, "VARIABLE_DEBT_DAI");
-        
+
         usdc = IERC20(USDC_TOKEN);
         dai = IERC20(DAI_TOKEN);
         aUSDC = IERC20(A_USDC);
@@ -51,39 +53,75 @@ contract TestMM1 is Test {
     }
 
     function testContract() public {
-        /** CODE YOUR SOLUTION HERE */
-		// TODO: Deploy AaveUser contract
-        
-		// TODO: Appove and deposit 1000 USDC tokens
+        /**
+         * CODE YOUR SOLUTION HERE
+         */
+        // TODO: Deploy AaveUser contract
 
-		// TODO: Validate that the depositedAmount state var was changed
+        vm.startPrank(user);
+        sut = new AaveUser(AAVE_V3_POOL, USDC_TOKEN, DAI_TOKEN);
 
-		// TODO: Validate that your contract received the aUSDC tokens (receipt tokens)
+        // TODO: Appove and deposit 1000 USDC tokens
 
-		// TODO: borrow 100 DAI tokens
+        usdc.approve(address(sut), AMOUNT_TO_DEPOSIT);
 
-		// TODO: Validate that the borrowedAmount state var was changed
+        sut.depositUSDC(AMOUNT_TO_DEPOSIT);
 
-		// TODO: Validate that the user received the DAI Tokens
+        // TODO: Validate that the depositedAmount state var was changed
 
-		// TODO: Validate that your contract received the DAI variable debt tokens
-        
-		// TODO: Repay all the DAI
+        assertEq(sut.depositedAmount(), AMOUNT_TO_DEPOSIT);
 
-		// TODO: Validate that the borrowedAmount state var was changed
+        // TODO: Validate that your contract received the aUSDC tokens (receipt tokens)
 
-		// TODO: Validate that the user doesn't own the DAI tokens
+        assertEq(aUSDC.balanceOf(address(sut)), AMOUNT_TO_DEPOSIT);
 
-		// TODO: Validate that your contract own much less DAI Variable debt tokens (less then 0.1% of borrowed amount)
-		// Note: The contract still supposed to own some becuase of negative interest
+        // TODO: borrow 100 DAI tokens
 
-		// TODO: Withdraw all your USDC
+        sut.borrowDAI(AMOUNT_TO_BORROW);
 
-		// TODO: Validate that the depositedAmount state var was changed
+        // TODO: Validate that the borrowedAmount state var was changed
 
-		// TODO: Validate that the user got the USDC tokens back
+        assertEq(sut.borrowedAmount(), AMOUNT_TO_BORROW);
 
-		// TODO: Validate that your contract own much less aUSDC receipt tokens (less then 0.1% of deposited amount)
-		// Note: The contract still supposed to own some becuase of the positive interest
+        // TODO: Validate that the user received the DAI Tokens
+        assertEq(dai.balanceOf(user), AMOUNT_TO_BORROW);
+
+        // TODO: Validate that your contract received the DAI variable debt tokens
+        assertEq(debtDAI.balanceOf(address(sut)), AMOUNT_TO_BORROW);
+
+        // TODO: Repay all the DAI
+        uint256 initialDebtDaiBalance = debtDAI.balanceOf(address(sut));
+
+        dai.approve(address(sut), AMOUNT_TO_BORROW);
+        sut.repayDAI(AMOUNT_TO_BORROW);
+
+        // TODO: Validate that the borrowedAmount state var was changed
+        assertEq(sut.borrowedAmount(), 0);
+
+        // TODO: Validate that the user doesn't own the DAI tokens
+
+        assertEq(dai.balanceOf(user), 0);
+
+        // TODO: Validate that your contract own much less DAI Variable debt tokens (less then 0.1% of borrowed amount)
+        // Note: The contract still supposed to own some becuase of negative interest
+        assertLt(debtDAI.balanceOf(address(sut)), initialDebtDaiBalance / 1000);
+
+        // TODO: Withdraw all your USDC
+        uint256 initialAusdcBalance = aUSDC.balanceOf(address(sut));
+
+        sut.withdrawUSDC(AMOUNT_TO_DEPOSIT);
+
+        // TODO: Validate that the depositedAmount state var was changed
+
+        assertEq(sut.depositedAmount(), 0);
+
+        // TODO: Validate that the user got the USDC tokens back
+
+        assertEq(usdc.balanceOf(user), USER_USDC_BALANCE);
+
+        // TODO: Validate that your contract own much less aUSDC receipt tokens (less then 0.1% of deposited amount)
+        // Note: The contract still supposed to own some becuase of the positive interest
+
+        assertLt(aUSDC.balanceOf(address(sut)), initialAusdcBalance / 1000);
     }
 }
