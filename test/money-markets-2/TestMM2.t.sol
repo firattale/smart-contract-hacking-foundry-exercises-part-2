@@ -52,38 +52,60 @@ contract TestMM2 is Test {
          * CODE YOUR SOLUTION HERE
          */
         // TODO: Deploy CompoundUser.sol smart contract
-        
+        vm.startPrank(user);
+
+        sut = new CompoundUser(COMPTROLLER, CUSDC_TOKEN, CDAI_TOKEN);
+
         // TODO: Complete all the following tests using your deployed smart contract
         // TODO: Deposit 1000 USDC to compound
-        
+        usdc.approve(address(sut), AMOUNT_TO_DEPOSIT);
+        dai.approve(address(sut), AMOUNT_TO_BORROW);
+        sut.deposit(AMOUNT_TO_DEPOSIT);
+
         // TODO: Validate that the depositedAmount state var was changed
-        
+
+        assertEq(sut.depositedAmount(), AMOUNT_TO_DEPOSIT);
+
         // TODO: Store the cUSDC tokens that were minted to the compoundUser contract in `cUSDCBalanceBefore`
-        
+        uint256 cUSDCBalanceBefore = cUsdc.balanceOf(address(sut));
+
         // TODO: Validate that your contract received cUSDC tokens (receipt tokens)
-        
+        assertGt(cUSDCBalanceBefore, AMOUNT_TO_DEPOSIT);
+
         // TODO: Allow USDC as collateral
-        
+        sut.allowUSDCAsCollateral();
+
         // TODO: Borrow 100 DAI against the deposited USDC
-        
+
+        sut.borrow(AMOUNT_TO_BORROW);
+
         // TODO: Validate that the borrowedAmount state var was changed
-        
+        assertEq(sut.borrowedAmount(), AMOUNT_TO_BORROW);
+
         // TODO: Validate that the user received the DAI Tokens
-        
+        assertEq(dai.balanceOf(user), AMOUNT_TO_BORROW);
+
         // TODO: Repay all the borrowed DAI
-        
+        sut.repay(AMOUNT_TO_BORROW);
+
         // TODO: Validate that the borrowedAmount state var was changed
-        
+
+        assertEq(sut.borrowedAmount(), 0);
+
         // TODO: Validate that the user doesn't own the DAI tokens
-        
+        assertEq(dai.balanceOf(user), 0);
+
         // TODO: Withdraw all your USDC
-        
+        sut.withdraw(AMOUNT_TO_DEPOSIT);
+
         // TODO: Validate that the depositedAmount state var was changed
-        
+        assertEq(sut.depositedAmount(), 0);
+
         // TODO: Validate that the user got the USDC tokens back
-        
+        assertEq(usdc.balanceOf(user), USER_USDC_BALANCE);
+
         // TODO: Validate that the majority of the cUSDC tokens (99.9%) were burned, and the contract doesn't own them
         // NOTE: There are still some cUSDC tokens left, since we accumelated positive interest
-        
+        assertLt(cUsdc.balanceOf(address(sut)), cUSDCBalanceBefore / 1000);
     }
 }
