@@ -57,7 +57,7 @@ contract AaveUser is Ownable {
         // TODO: Borrow the DAI tokens in variable interest mode
         aave_pool.borrow(address(dai), _amount, 2, 0, address(this));
         // TODO: Transfer DAI token to the user
-        dai.transfer(owner(), dai.balanceOf(address(this)));
+        dai.transfer(owner(), _amount);
     }
 
     // Repay the borrowed DAI to AAVE
