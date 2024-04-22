@@ -3,30 +3,30 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
-import "src/replay-attack-2/RealtySale.sol";
+import "src/replay-attack-2/SecuredRealtySale.sol";
 import "src/replay-attack-2/RealtyToken.sol";
+import {AttackRealtySale} from "src/replay-attack-2/AttackRealtySale.sol";
 import "src/replay-attack-2/Structs.sol";
 
 /**
  * @dev run "forge test -vvv --match-contract RA2"
  */
 contract TestRA2 is Test {
-
     address deployer = makeAddr("deployer");
     address user1 = makeAddr("user1");
     address user2 = makeAddr("user2");
     address attacker = makeAddr("attacker");
 
     // Note: Replace type with SecuredRealtySale to check more secure implementation
-    RealtySale realtySale;
+    SecuredRealtySale realtySale;
     RealtyToken realtyToken;
 
     function setUp() public {
         vm.deal(attacker, 1 ether);
         vm.startPrank(deployer);
-        realtySale = new RealtySale();
+        realtySale = new SecuredRealtySale();
         realtyToken = RealtyToken(realtySale.getTokenContract());
-        
+
         // Buy without sending ETH reverts
         vm.startPrank(user1);
         vm.expectRevert();
@@ -50,14 +50,23 @@ contract TestRA2 is Test {
     }
 
     function testRealtySale() public {
-        /** CODE YOUR SOLUTION HERE */
+        /**
+         * CODE YOUR SOLUTION HERE
+         */
+        vm.startPrank(attacker);
+        AttackRealtySale attackRealtySale = new AttackRealtySale(address(realtySale));
+        for (uint256 index = 0; index < 98; index++) {
+            attackRealtySale.attack();
+        }
 
-        /** SUCCESS CONDITIONS */
+        /**
+         * SUCCESS CONDITIONS
+         */
 
-		// Attacker bought all 98 shares
+        // // Attacker bought all 98 shares
         assertEq(realtyToken.balanceOf(attacker), 98);
 
-		// No more shares left :(
+        // // No more shares left :(
         assertEq(realtyToken.maxSupply(), realtyToken.lastTokenID());
     }
 }

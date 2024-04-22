@@ -20,7 +20,7 @@ abstract contract RealtySaleEIP712 is EIP712 {
     }
 }
 
-contract RealtySale is Ownable, RealtySaleEIP712 {
+contract SecuredRealtySale is Ownable, RealtySaleEIP712 {
     RealtyToken public immutable shareToken;
     uint256 public constant INITAL_SHARE_PRICE = 1 ether;
     address private oracle;
@@ -60,6 +60,8 @@ contract RealtySale is Ownable, RealtySaleEIP712 {
         bytes32 sharePriceHash = _hashSharePrice(sharePrice);
         // @audit if it is not valid, it might return address(0)
         address recovered = _recover(sharePriceHash, signature.v, signature.r, signature.s);
+
+        require(recovered != address(0), "wrong signature provided");
 
         require(recovered == oracle, "Only oracle can sign prices");
     }
