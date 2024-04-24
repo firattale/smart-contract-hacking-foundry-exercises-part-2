@@ -4,6 +4,7 @@
 pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts/utils/Address.sol";
+import "forge-std/console.sol";
 
 interface IFlashLoanEtherReceiver {
     function callBack() external payable;
@@ -15,6 +16,7 @@ interface IFlashLoanEtherReceiver {
  */
 contract AdvancedVault {
     using Address for address payable;
+
     mapping(address => uint256) private balances;
 
     constructor() payable {}
@@ -31,14 +33,11 @@ contract AdvancedVault {
 
     function flashLoanETH(uint256 amount) external {
         uint256 balanceBefore = address(this).balance;
-        require(
-            balanceBefore >= amount,
-            "Requested amount is greater than Vault balance"
-        );
+
+        require(balanceBefore >= amount, "Requested amount is greater than Vault balance");
+
         IFlashLoanEtherReceiver(msg.sender).callBack{value: amount}();
-        require(
-            address(this).balance >= balanceBefore,
-            "Need to pay back the loan"
-        );
+
+        require(address(this).balance >= balanceBefore, "Need to pay back the loan");
     }
 }

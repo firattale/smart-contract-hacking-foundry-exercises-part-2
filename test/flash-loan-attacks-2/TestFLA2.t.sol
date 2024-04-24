@@ -5,20 +5,24 @@ import "forge-std/Test.sol";
 import "forge-std/Vm.sol";
 import "forge-std/console.sol";
 import "src/flash-loan-attacks-2/AdvancedVault.sol";
+import "src/flash-loan-attacks-2/AttackAdvancedVault.sol";
 
 /**
  * @dev run "forge test -vvv --match-contract FLA2"
  */
 contract TestFLA2 is Test {
-
     address deployer = makeAddr("deployer");
     address attacker = makeAddr("attacker");
     uint256 constant ETH_IN_VAULT = 1000 ether;
     AdvancedVault vault;
     uint256 attackerInitialBalance;
 
+    AttackAdvancedVault attackAdvancedVault;
+
     function setUp() public {
-        /** SETUP EXERCISE - DON'T CHANGE ANYTHING HERE */
+        /**
+         * SETUP EXERCISE - DON'T CHANGE ANYTHING HERE
+         */
         vm.deal(deployer, ETH_IN_VAULT);
         vm.startPrank(deployer);
 
@@ -29,9 +33,18 @@ contract TestFLA2 is Test {
     }
 
     function testFlashLoanAttack() public {
-        /** CODE YOUR SOLUTION HERE */
+        /**
+         * CODE YOUR SOLUTION HERE
+         */
+        vm.startPrank(attacker);
+        attackAdvancedVault = new AttackAdvancedVault(address(vault));
 
-        /** SUCCESS CONDITIONS */
+        attackAdvancedVault.attack();
+        attackAdvancedVault.withdraw();
+
+        /**
+         * SUCCESS CONDITIONS
+         */
         assertEq(address(vault).balance, 0);
         assertGe(attacker.balance, attackerInitialBalance + ETH_IN_VAULT);
     }
