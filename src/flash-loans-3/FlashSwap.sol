@@ -20,13 +20,20 @@ contract FlashSwap {
     }
 
     // TODO: Implement this function
-    function executeFlashSwap(address _token, uint256 _amount) external {}
+    function executeFlashSwap(address _token, uint256 _amount) external {
+        token = _token;
+        console.log("Initial Token Balance", IERC20(_token).balanceOf(address(this)));
+        pair.swap(_amount, 0, address(this), "some data");
+    }
 
     // TODO: Implement this function
-    function uniswapV2Call(
-        address sender,
-        uint amount0,
-        uint amount1,
-        bytes calldata data
-    ) external {}
+    function uniswapV2Call(address, uint256 amount0, uint256, bytes calldata) external {
+        console.log("During Token Balance", IERC20(token).balanceOf(address(this)));
+        uint256 fee = (amount0 * 3) / 997 + 1;
+        console.log("FEE", fee);
+
+        // Do something with flash swap
+
+        IERC20(token).transfer(address(pair), amount0 + fee);
+    }
 }

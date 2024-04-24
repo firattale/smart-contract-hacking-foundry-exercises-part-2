@@ -15,20 +15,31 @@ contract TestFL3 is Test {
     address constant USDC_WETH_PAIR = address(0xB4e16d0168e52d35CaCD2c6185b44281Ec28C9Dc);
     address constant USDC_WHALE = address(0x8e5dEdeAEb2EC54d0508973a0Fccd1754586974A);
     // $40M USDC
-    uint256 constant BORROW_AMOUNT = 40_000_000 * 10**6;
+    uint256 constant BORROW_AMOUNT = 40_000_000 * 10 ** 6;
     // Uniswap V2 fee is 0.3% which is $1.2M USDC
     uint256 constant UNISWAP_FEE = (BORROW_AMOUNT * 3) / 997 + 1;
 
     address deployer = makeAddr("deployer");
-    
+
     FlashSwap flashSwap;
 
     function testFlashLoan() public {
-        /** CODE YOUR SOLUTION HERE */
-		// TODO: Get contract objects for relevant On-Chain contracts
-		// TODO: Deploy Flash Swap contract
-		// TODO: Send USDC to contract for fees
-		// TODO: Execute successfully a Flash Swap of $40,000,000 (USDC)
+        /**
+         * CODE YOUR SOLUTION HERE
+         */
+        // TODO: Get contract objects for relevant On-Chain contracts
+        IERC20 usdc = IERC20(USDC_TOKEN);
+        // TODO: Deploy Flash Swap contract
+        vm.prank(deployer);
+        flashSwap = new FlashSwap(USDC_WETH_PAIR);
+        // TODO: Send USDC to contract for fees
+        vm.prank(USDC_WHALE);
+        usdc.transfer(address(flashSwap), UNISWAP_FEE);
+        assertEq(usdc.balanceOf(address(flashSwap)), UNISWAP_FEE);
+
+        // TODO: Execute successfully a Flash Swap of $40,000,000 (USDC)
+        flashSwap.executeFlashSwap(USDC_TOKEN, BORROW_AMOUNT);
         // TODO: Assert that fee was paid
+        assertEq(usdc.balanceOf(address(flashSwap)), 0);
     }
 }
