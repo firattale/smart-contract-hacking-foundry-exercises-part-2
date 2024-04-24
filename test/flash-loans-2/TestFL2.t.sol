@@ -16,20 +16,28 @@ contract TestFL2 is Test {
     address constant AAVE_POOL = address(0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9);
     address constant USDC_WHALE = address(0x8e5dEdeAEb2EC54d0508973a0Fccd1754586974A);
     // $100M USDC
-    uint256 constant BORROW_AMOUNT = 100_000_000 * 10**6;
+    uint256 constant BORROW_AMOUNT = 100_000_000 * 10 ** 6;
     // Aave fee is 0.09% of the amount borrowed
-    uint256 constant AAVE_FEE = 90_000 * 10**6;
+    uint256 constant AAVE_FEE = 90_000 * 10 ** 6;
 
     IERC20 usdc = IERC20(USDC_TOKEN);
     address deployer = makeAddr("deployer");
-    
+
     FlashLoan flashLoan;
 
     function testFlashLoan() public {
-        /** CODE YOUR SOLUTION HERE */
-		// TODO: Get contract objects for relevant On-Chain contracts
-		// TODO: Deploy Flash Loan contract
-		// TODO: Send USDC to contract for fees
-		// TODO: Execute successfully a Flash Loan of $100,000,000 (USDC)
+        /**
+         * CODE YOUR SOLUTION HERE
+         */
+        // TODO: Get contract objects for relevant On-Chain contracts
+        ILendingPool aave_pool = ILendingPool(AAVE_POOL);
+        // TODO: Deploy Flash Loan contract
+        flashLoan = new FlashLoan(address(aave_pool));
+        // TODO: Send USDC to contract for fees
+        vm.prank(USDC_WHALE);
+        usdc.transfer(address(flashLoan), AAVE_FEE);
+        assertEq(usdc.balanceOf(address(flashLoan)), AAVE_FEE);
+        // TODO: Execute successfully a Flash Loan of $100,000,000 (USDC)
+        flashLoan.getFlashLoan(USDC_TOKEN, BORROW_AMOUNT);
     }
 }
