@@ -21,7 +21,14 @@ contract GreedyReceiver {
     // TODO: Implement Greedy Receiver Logic (Not paying back the loan)
 
     // TODO: Complete this function
-    function flashLoan(uint256 amount) external {}
+    function flashLoan(uint256 amount) external {
+        pool.flashLoan(amount);
+    }
 
     // TODO: Complete getETH() payable function
+    function getETH() external payable {
+        // Do something with the ETH first and then send only 1 wei
+        (bool sent,) = address(pool).call{value: 1}("");
+        require(sent, "ETH Transfer to Pool Failed");
+    }
 }

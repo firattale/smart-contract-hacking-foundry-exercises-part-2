@@ -15,7 +15,15 @@ contract Pool {
     constructor() payable {}
 
     // TODO: Complete this function
-    function flashLoan(uint256 amount) external {}
+    function flashLoan(uint256 amount) external {
+        uint256 initialBalance = address(this).balance;
+        require(amount <= initialBalance, "Not Enough ETH");
+
+        IReceiver(msg.sender).getETH{value: amount}();
+
+        uint256 newBalance = address(this).balance;
+        require(newBalance > initialBalance, "Flash Loan + fee not paid");
+    }
 
     receive() external payable {}
 }
