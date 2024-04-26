@@ -24,17 +24,14 @@ contract GalacticGorillas is ERC721, Ownable {
     constructor() ERC721("Galactic Gorillas", "GG") {}
 
     function mint(uint8 _mintAmount) external payable {
+        // @audit-ok
         require(!paused, "contract is paused");
-        require(
-            _mintAmount > 0 && _mintAmount <= MAX_PER_WALLET,
-            "wrong _mintAmount"
-        );
+        // @audit-ok
+        require(_mintAmount > 0 && _mintAmount <= MAX_PER_WALLET, "wrong _mintAmount");
+        // @audit-ok
         require(totalSupply + _mintAmount <= MAX_SUPPLY, "exceeded MAX_SUPPLY");
         require(msg.value == MINT_PRICE * _mintAmount, "not enough ETH");
-        require(
-            mintCount[msg.sender] + _mintAmount <= MAX_PER_WALLET,
-            "exceeded MAX_PER_WALLET"
-        );
+        require(mintCount[msg.sender] + _mintAmount <= MAX_PER_WALLET, "exceeded MAX_PER_WALLET");
 
         payable(owner()).call{value: msg.value}("");
         mintCount[msg.sender] += _mintAmount;
@@ -48,10 +45,7 @@ contract GalacticGorillas is ERC721, Ownable {
     function burn(uint16 _tokenId) external {
         require(!paused, "contract is paused");
         require(_tokenId > 0 && _tokenId <= totalSupply, "wrong _tokenId");
-        require(
-            _isApprovedOrOwner(msg.sender, _tokenId),
-            "not owner of the token"
-        );
+        require(_isApprovedOrOwner(msg.sender, _tokenId), "not owner of the token");
 
         _burn(_tokenId);
         totalSupply -= 1;

@@ -5,12 +5,12 @@ import "forge-std/Test.sol";
 import "forge-std/Vm.sol";
 import "forge-std/console.sol";
 import "src/dos-4/GalacticGorillas.sol";
+import {AttackGalacticGorillas} from "src/dos-4/AttackGalacticGorillas.sol";
 
 /**
  * @dev run "forge test -vvv --match-contract DOS4"
  */
 contract TestDOS4 is Test {
-
     uint256 constant MINT_PRICE = 1 ether;
 
     address deployer = makeAddr("deployer");
@@ -20,7 +20,9 @@ contract TestDOS4 is Test {
     GalacticGorillas nft;
 
     function setUp() public {
-        /** SETUP EXERCISE - DON'T CHANGE ANYTHING HERE */
+        /**
+         * SETUP EXERCISE - DON'T CHANGE ANYTHING HERE
+         */
         vm.deal(attacker, 2.5 ether);
         vm.deal(user, 100 ether);
 
@@ -28,10 +30,10 @@ contract TestDOS4 is Test {
         nft = new GalacticGorillas();
         vm.stopPrank();
     }
-    
+
     function testSuccessMinting() public {
         uint256 deployerBalanceBefore = address(deployer).balance;
-        
+
         vm.startPrank(user);
         nft.mint{value: MINT_PRICE * 2}(2);
 
@@ -51,9 +53,9 @@ contract TestDOS4 is Test {
         vm.expectRevert("not enough ETH");
         nft.mint(1);
 
-        nft.mint{value: MINT_PRICE * 2 }(2);
+        nft.mint{value: MINT_PRICE * 2}(2);
         vm.expectRevert("exceeded MAX_PER_WALLET");
-        nft.mint{value: MINT_PRICE * 4 }(4);
+        nft.mint{value: MINT_PRICE * 4}(4);
     }
 
     function testPause() public {
@@ -67,24 +69,33 @@ contract TestDOS4 is Test {
         nft.pause(true);
         vm.expectRevert("contract is paused");
         vm.startPrank(user);
-        nft.mint{value: MINT_PRICE * 2 }(2);
+        nft.mint{value: MINT_PRICE * 2}(2);
 
         // Unpause and try minting
         vm.startPrank(deployer);
         nft.pause(false);
         vm.startPrank(user);
-        nft.mint{value: MINT_PRICE * 1 }(1);
+        nft.mint{value: MINT_PRICE * 1}(1);
         assertEq(nft.balanceOf(user), 1);
     }
 
     function testDosAttack() public {
-        /** SETUP, DON'T CHANGE */
-        vm.startPrank(user);
+        /**
+         * SETUP, DON'T CHANGE
+         */
+        vm.prank(user);
         nft.mint{value: MINT_PRICE * 3}(3);
 
-        /** CODE YOUR SOLUTION HERE */        
+        /**
+         * CODE YOUR SOLUTION HERE
+         */
+        vm.startPrank(attacker);
+        AttackGalacticGorillas attackGalacticGorillas = new AttackGalacticGorillas(address(nft));
+        attackGalacticGorillas.attack{value: MINT_PRICE * 2}();
 
-        /** SUCCESS CONDITIONS */
+        /**
+         * SUCCESS CONDITIONS
+         */
         vm.startPrank(user);
         vm.expectRevert();
         // User can't mint nfts even though he is eligable for 2 additional mints
