@@ -72,9 +72,14 @@ contract TestSOCD3 is Test {
 
         vm.startPrank(attacker);
 
-        // cast index uint256 1 4 // find the raffles[1] storage location = resulted 0xabd6e7cb50984ff9c2f3e18a2660c3353dadf4e3291deeb275dae2cd1e44fe05
+        // cast index uint256 1 4 // find the raffles[1] storage location
+        // 1 is the key of the mapping
+        // 4 is the slot storage of mapping
 
-        // cast storage 0x142798162D7ce789C6730B6635c20475B593eeca --rpc-url sepolia 0xabd6e7cb50984ff9c2f3e18a2660c3353dadf4e3291deeb275dae2cd1e44fe05 // access the value of the raffles[1]
+        // resulted = 0xabd6e7cb50984ff9c2f3e18a2660c3353dadf4e3291deeb275dae2cd1e44fe05
+
+        // cast storage 0x142798162D7ce789C6730B6635c20475B593eeca --rpc-url sepolia 0xabd6e7cb50984ff9c2f3e18a2660c3353dadf4e3291deeb275dae2cd1e44fe05
+        // access the value of the raffles[1]
 
         //  0x0000000000000000000000000000000000000000000000000000000000070013 = 13, 0, 07 in hex numbers equals to 19, 0, 7
 
