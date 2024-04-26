@@ -33,7 +33,9 @@ contract GalacticGorillas is ERC721, Ownable {
         require(msg.value == MINT_PRICE * _mintAmount, "not enough ETH");
         require(mintCount[msg.sender] + _mintAmount <= MAX_PER_WALLET, "exceeded MAX_PER_WALLET");
 
-        payable(owner()).call{value: msg.value}("");
+        (bool sent,) = payable(owner()).call{value: msg.value}("");
+        require(sent, "ETH Transfer Failed");
+
         mintCount[msg.sender] += _mintAmount;
 
         for (uint8 i = 1; i <= _mintAmount; i++) {
