@@ -42,7 +42,6 @@ Important: Use ONLY "cast" CLI to solve the following exercises, in your answer 
 
 3. For the same transaction, get the transaction input data and contract address that was called.
 
-
 ### Task 3 - Transaction Analysis
 1. Using the data that you got from the previous question, find the function name and parameters types that was called.
 
@@ -56,3 +55,4 @@ Important: Use ONLY "cast" CLI to solve the following exercises, in your answer 
 1. Get the smart contract source-code [FROM HERE](https://bscscan.com/address/0x5aF6D33DE2ccEC94efb1bDF8f92Bd58085432d2c#code), and copy it to a new file in VSCODE.
 
 Explain which are the state variables that match storage values that you found in the previous question?
+
