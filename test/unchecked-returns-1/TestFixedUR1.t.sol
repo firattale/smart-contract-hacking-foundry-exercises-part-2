@@ -3,13 +3,13 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
-import "src/unchecked-returns-1/DonationMaster.sol";
-import "src/unchecked-returns-1/MultiSigSafe.sol";
+import "src/unchecked-returns-1/SecuredDonationMaster.sol";
+import "src/unchecked-returns-1/SecuredMultiSigSafe.sol";
 
 /**
- * @dev run "forge test -vvv --match-contract UR1"
+ * @dev run "forge test -vvv --match-contract FixedUR1"
  */
-contract TestUR1 is Test {
+contract TestFixedUR1 is Test {
     uint256 constant ONE_ETH = 1 ether;
     uint256 constant HUNDRED_ETH = 100 ether;
     uint256 constant THOUSAND_ETH = 1000 ether;
@@ -19,19 +19,19 @@ contract TestUR1 is Test {
     address user2 = makeAddr("user2");
     address user3 = makeAddr("user3");
 
-    DonationMaster donationMaster;
-    MultiSigSafe multiSig;
+    SecuredDonationMaster donationMaster;
+    SecuredMultiSigSafe multiSig;
 
     function setUp() public {
         /* SETUP EXERCISE - DON'T CHANGE ANYTHING HERE */
         vm.deal(deployer, 10_000 ether);
         vm.startPrank(deployer);
-        donationMaster = new DonationMaster();
+        donationMaster = new SecuredDonationMaster();
         address[] memory signers = new address[](3);
         signers[0] = user1;
         signers[1] = user2;
         signers[2] = user3;
-        multiSig = new MultiSigSafe(signers, 2);
+        multiSig = new SecuredMultiSigSafe(signers, 2);
     }
 
     function testsDonation() public {
@@ -58,7 +58,7 @@ contract TestUR1 is Test {
 
     // Note: Test is marked as expected to fail (by having Fail in the name)
     // Here you have to demonstrate the bug, therefore the test should be failing.
-    function testFailFixedTests() public {
+    function testFixedTests() public {
         /* CODE YOUR SOLUTION HERE */
         /* Write the correct tests here */
         donationMaster.newDonation(address(multiSig), HUNDRED_ETH);
