@@ -1,6 +1,5 @@
 import {ethers, network} from 'hardhat';
 import {expect} from 'chai';
-import {BigNumber} from '@ethersproject/bignumber';
 import {SignerWithAddress} from '@nomicfoundation/hardhat-ethers/signers';
 import {Referrals} from '../../typechain-types';
 
@@ -45,6 +44,7 @@ describe('Frontrunning Attack Exercise 2', function () {
     const tx = transactions.find((tx: any) => {
       return tx.to.toLowerCase() === referralsAddress.toLowerCase();
     });
+
     await attacker.sendTransaction({
       to: referralsAddress,
       data: tx.input,

@@ -1,6 +1,5 @@
 import {ethers, network} from 'hardhat';
 import {expect} from 'chai';
-import {BigNumber} from '@ethersproject/bignumber';
 import {SignerWithAddress} from '@nomicfoundation/hardhat-ethers/signers';
 import {FindMe} from '../../typechain-types';
 
