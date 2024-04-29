@@ -11,17 +11,17 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
  * @author JohnnyTime (https://smartcontractshacking.com)
  */
 contract RainbowAllianceToken is ERC20, Ownable {
-    uint public lastProposalId;
+    uint256 public lastProposalId;
 
-    mapping(address => uint) public getVotingPower;
-    mapping(uint => Proposal) public getProposal;
-    mapping(uint => mapping(address => bool)) public voted;
+    mapping(address => uint256) public getVotingPower;
+    mapping(uint256 => Proposal) public getProposal;
+    mapping(uint256 => mapping(address => bool)) public voted;
 
     struct Proposal {
-        uint id;
+        uint256 id;
         string description;
-        uint yes;
-        uint no;
+        uint256 yes;
+        uint256 no;
     }
 
     constructor() ERC20("Rainbow Alliance", "RNB") {
@@ -39,22 +39,20 @@ contract RainbowAllianceToken is ERC20, Ownable {
     }
 
     function createProposal(string memory _description) external {
+        // @audit-issue transfering tokens does not mean transferring voting power, we should use user balance instead of getVotingPower
         require(getVotingPower[msg.sender] > 0, "no voting rights");
         require(bytes(_description).length != 0, "description is required");
 
         lastProposalId = lastProposalId + 1;
 
-        getProposal[lastProposalId] = Proposal({
-            id: lastProposalId,
-            description: _description,
-            yes: getVotingPower[msg.sender],
-            no: 0
-        });
+        getProposal[lastProposalId] =
+            Proposal({id: lastProposalId, description: _description, yes: getVotingPower[msg.sender], no: 0});
 
         voted[lastProposalId][msg.sender] = true;
     }
 
-    function vote(uint _id, bool _decision) external {
+    function vote(uint256 _id, bool _decision) external {
+        // @audit-issue transfering tokens does not mean transferring voting power, we should use user balance instead of getVotingPower
         require(getVotingPower[msg.sender] > 0, "no voting rights");
         require(!voted[_id][msg.sender], "already voted");
         Proposal storage proposal = getProposal[_id];
