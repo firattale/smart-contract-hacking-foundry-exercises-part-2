@@ -7,12 +7,12 @@ import "src/dao-attack-3/DAOToken.sol";
 import "src/dao-attack-3/Governance.sol";
 import "src/dao-attack-3/LendingPool.sol";
 import "src/dao-attack-3/Treasury.sol";
+import "src/dao-attack-3/AttackDAO.sol";
 
 /**
  * @dev run "forge test -vvv --match-contract DAO3"
  */
 contract TestDAO3 is Test {
-    
     // DAO Tokens
     uint256 constant DEPLOYER_TOKENS = 2_500_000 ether; // 2.5M Tokens
     uint256 constant MEMBER_1_TOKENS = 500_000 ether; // 500K Tokens
@@ -32,9 +32,8 @@ contract TestDAO3 is Test {
     address member2 = makeAddr("member2");
     address attacker = makeAddr("attacker");
 
-
     uint256 attackerInitialETHBalance;
-    
+
     function setUp() public {
         /* SETUP EXERCISE - DON'T CHANGE ANYTHING HERE */
         attackerInitialETHBalance = attacker.balance;
@@ -60,14 +59,23 @@ contract TestDAO3 is Test {
     }
 
     function testGovernanceExploit() public {
-        /** CODE YOUR SOLUTION HERE */
+        /**
+         * CODE YOUR SOLUTION HERE
+         */
+        vm.startPrank(attacker);
+        AttackDAO attackDAO =
+            new AttackDAO(address(pool), address(token), address(governance), payable(address(treasury)));
 
-        /** SUCCESS CONDITIONS - DON'T CHANGE ANYTHING HERE */
+        attackDAO.attack(token.balanceOf(address(pool)));
 
-		// No ETH left in treasury
+        /**
+         * SUCCESS CONDITIONS - DON'T CHANGE ANYTHING HERE
+         */
+
+        // No ETH left in treasury
         assertEq(address(treasury).balance, 0);
 
-		// Attacker stole all ETH from the treasury
+        // Attacker stole all ETH from the treasury
         assertGt(address(attacker).balance, attackerInitialETHBalance + ETH_IN_TREASURY - 0.2 ether);
     }
 }
