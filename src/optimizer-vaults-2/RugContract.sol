@@ -10,12 +10,17 @@ import "../interfaces/IOptimizerStrategy.sol";
 
 contract RugContract is Ownable {
     IOptimizerStrategy public strategy;
+    uint256 vaultBal;
 
     constructor(address _strategy) {
         strategy = IOptimizerStrategy(_strategy);
+        vaultBal = strategy.balanceOf();
     }
 
     function rug() external onlyOwner {
         // TODO: Rug users
+        address usdc = strategy.want();
+        strategy.withdraw(vaultBal);
+        IERC20(usdc).transfer(owner(), IERC20(usdc).balanceOf(address(this)));
     }
 }

@@ -9,4 +9,5 @@ interface IOptimizerStrategy {
     function withdraw(uint256) external;
     function balanceOf() external view returns (uint256);
     function harvest() external;
+    function setVault(address) external;
 }

