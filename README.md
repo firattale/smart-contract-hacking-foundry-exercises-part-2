@@ -76,7 +76,3 @@ List of exercises using **Hardhat**
  - frontrunning-2
  - frontrunning-3
  - optimizer-vaults-1
-
-## Solutions
-
-You can find solutions on the following branch: `solutions-georgi`
